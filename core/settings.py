@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-v^_mc3^kq6e)(3j=ej89sez6slzjb6_j#sy&t^wpb0%i%=xv%s
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1','web-production-0a76.up.railway.app']
 
 
 # Application definition
@@ -217,4 +217,5 @@ CORS_ALLOWED_ORIGINS = [
     "web-production-0a76.up.railway.app"
     # Añade aquí el dominio de tu app Flutter si es web o déjalo abierto si es nativa y confías en la red
 ]
+
 # CORS_ALLOW_CREDENTIALS = True # Permite cookies/headers de autorización
