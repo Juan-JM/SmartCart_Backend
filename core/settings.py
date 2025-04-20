@@ -211,9 +211,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Ruta donde se guardarán las im�
 # En desarrollo, puedes permitir todo:
 CORS_ALLOW_ALL_ORIGINS = True
 # En producción, sé más específico:
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:3000", # Tu frontend React
-#     "http://127.0.0.1:3000",
-#     # Añade aquí el dominio de tu app Flutter si es web o déjalo abierto si es nativa y confías en la red
-# ]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000", # Tu frontend React
+    "http://127.0.0.1:3000",
+    "web-production-0a76.up.railway.app"
+    # Añade aquí el dominio de tu app Flutter si es web o déjalo abierto si es nativa y confías en la red
+]
 # CORS_ALLOW_CREDENTIALS = True # Permite cookies/headers de autorización
