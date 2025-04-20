@@ -1,10 +1,7 @@
 import os
-import dj_database_url
 from pathlib import Path
 from datetime import timedelta # Asegúrate de importar timedelta
-from dotenv import load_dotenv
 
-load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -82,21 +79,16 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # Ejemplo PostgreSQL (requiere psycopg2-binary y crear la base de datos 'ecommerce_db'):
-
-
-DATABASES ={
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'ecommerce_db',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost', # O la IP/hostname de tu servidor DB
+        'PORT': '5432',      # Puerto por defecto de PostgreSQL
+    }
 }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'ecommerce_db',
-#         'USER': 'postgres',
-#         'PASSWORD': 'postgres',
-#         'HOST': 'localhost', # O la IP/hostname de tu servidor DB
-#         'PORT': '5432',      # Puerto por defecto de PostgreSQL
-#     }
-# }
 
 
 # Password validation
