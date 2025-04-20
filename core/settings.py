@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-v^_mc3^kq6e)(3j=ej89sez6slzjb6_j#sy&t^wpb0%i%=xv%s'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1','web-production-0a76.up.railway.app']
 
@@ -120,15 +120,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-# LANGUAGE_CODE = 'en-us'
-# TIME_ZONE = 'UTC'
-# USE_I18N = True
-# USE_TZ = True
-LANGUAGE_CODE = 'es-es' # Español
-TIME_ZONE = 'America/La_Paz' # Ajusta a tu zona horaria (e.g., America/La_Paz para Bolivia)
+LANGUAGE_CODE = 'es-es' 
+TIME_ZONE = 'America/La_Paz' 
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
