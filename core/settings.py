@@ -39,13 +39,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'whitenoise.runserver_nostatic',
     # Terceros
     'django_filters',
     'rest_framework',
     'rest_framework_simplejwt',
     'authentication.apps.AuthenticationConfig',
     'corsheaders', # Para permitir peticiones desde React/Flutter
-
+    
     # Tus apps
     'usuarios.apps.UsuariosConfig', # O simplemente 'usuarios' si no defines una clase Config
     'productos.apps.ProductosConfig', # O 'productos'
@@ -55,6 +56,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware', # CORS Middleware, ¡importante!    
     'django.middleware.common.CommonMiddleware',
@@ -133,8 +135,13 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
+
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -184,9 +191,6 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
-    # Agregar esta línea (reemplaza 'myapp' con el nombre de tu app)
-    # 'TOKEN_OBTAIN_SERIALIZER': 'custom_jwt.my_jwt_serializers.CustomTokenObtainPairSerializer',
-
 }
 
 # # --- Configuración de Simple JWT ---
