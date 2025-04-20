@@ -205,4 +205,6 @@ CORS_ALLOWED_ORIGINS = [
     "web-production-0a76.up.railway.app"
 ]
 
+CSRF_TRUSTED_ORIGINS=['http://*','https://web-production-0a76.up.railway.app']
+
 # CORS_ALLOW_CREDENTIALS = True # Permite cookies/headers de autorización
