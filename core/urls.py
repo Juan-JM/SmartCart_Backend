@@ -11,7 +11,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('',admin.site.urls,name='index'),
+    # path('',admin.site.urls,name='index'),
     path('admin/', admin.site.urls),
     path('api/', include('authentication.urls')),
     # Endpoints de Autenticación JWT
