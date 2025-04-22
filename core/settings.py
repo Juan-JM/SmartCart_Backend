@@ -226,9 +226,9 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 # Configuración de Stripe
-STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY', 'pk_test_51Q6PfFA3VhVRZlE9icPaW8KTl6aje0qhOMyJ5hxVwK6BmJeqzziM1iF6eRkO3PhttRmvdYmN8l3Qk7RB9FFbFv1c00uAf9xSsm')
-STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', 'sk_test_51Q6PfFA3VhVRZlE9CEO6e9DihelRFUbaGvRph3N3hQlvvvvG9ou8aCZGXpeAYWAlb9tuTj3AhJN0Dy4s6iUQu4VF00IYb7Irfe')
-STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET', 'whsec_your_webhook_secret_here')
+STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
 STRIPE_API_VERSION = '2023-10-16'  # Usar la versión más reciente disponible
 
 # Configurar dominio para URLs de redirección
