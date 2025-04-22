@@ -183,26 +183,15 @@ SIMPLE_JWT = {
     'TOKEN_TYPE_CLAIM': 'token_type',
 }
 
-# # --- Configuración de Simple JWT ---
-# SIMPLE_JWT = {
-#     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60), # Duración del token de acceso
-#     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),    # Duración del token de refresco
-#     'ROTATE_REFRESH_TOKENS': False,
-#     'BLACKLIST_AFTER_ROTATION': True,
-#     # ... otras configuraciones de JWT si las necesitas ...
-# }
 
 MEDIA_URL = '/media/'  # URL para acceder a las imágenes en el navegador
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Ruta donde se guardarán las imágenes
 
 # --- Configuración de CORS ---
-# En desarrollo, puedes permitir todo:
 CORS_ALLOW_ALL_ORIGINS = True
-# En producción, sé más específico:
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000", # Tu frontend React
     "http://127.0.0.1:3000",
-    "web-production-0a76.up.railway.app"
 ]
 
 CSRF_TRUSTED_ORIGINS=['http://*','https://web-production-0a76.up.railway.app']

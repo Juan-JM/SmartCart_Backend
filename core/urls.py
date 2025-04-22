@@ -23,6 +23,12 @@ urlpatterns = [
     path('api/productos/', include('productos.urls')),
     path('api/inventario/', include('inventario.urls')),
     path('api/ventas/', include('ventas.urls')),
+    path('api/recomendaciones/', include('recomendaciones.urls')),
+    path('api/pagos/', include('pagos.urls')),  # Nueva URL para la app de pagos
+
+
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  
 
+# if settings.DEBUG:
+#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

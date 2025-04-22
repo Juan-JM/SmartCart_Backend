@@ -5,6 +5,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate # Para validar contraseña antigua
 from django.db import transaction
 from .models import Cliente, Personal
+from django.contrib.auth.models import Permission, ContentType
 
 # --- Serializers existentes (revisados/confirmados) ---
 
@@ -35,8 +36,8 @@ class ClienteSerializer(serializers.ModelSerializer):
     # No incluimos 'usuario' aquí para evitar redundancia si se anida
     class Meta:
         model = Cliente
-        fields = ('nombre', 'numero', 'direccion', 'points')
-        read_only_fields = ('points',)
+        fields = ('id','nombre', 'numero', 'direccion', 'points', 'usuario_id')
+        read_only_fields = ('id','points',)
 
 # Serializer para el perfil Personal (solo lectura)
 class PersonalSerializer(serializers.ModelSerializer):
@@ -82,22 +83,45 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         # Extraer datos del perfil de cliente si existen
         cliente_data = validated_data.pop('cliente_profile', None)
+        groups_data = validated_data.pop('groups', None)
 
-        # Actualizar campos del User (email, first_name, last_name)
+        # Actualizar campos del User
         instance.email = validated_data.get('email', instance.email)
         instance.first_name = validated_data.get('first_name', instance.first_name)
         instance.last_name = validated_data.get('last_name', instance.last_name)
+        
+        # Actualizar grupos si se proporcionan
+        if groups_data is not None and self.context['request'].user.is_staff:
+            instance.groups.set(groups_data)
+        
         instance.save()
 
         # Actualizar campos del Cliente si existen datos y el perfil existe
-        # Usamos hasattr para verificar si el usuario tiene un perfil de cliente
         if cliente_data and hasattr(instance, 'cliente_profile'):
             cliente_serializer = ClienteSerializer(instance.cliente_profile, data=cliente_data, partial=True)
             if cliente_serializer.is_valid(raise_exception=True):
                 cliente_serializer.save()
-        # No se actualiza el perfil de Personal aquí (se asume gestión por Admin)
 
-        return instance
+        return instance    
+    # def update(self, instance, validated_data):
+    #     # Extraer datos del perfil de cliente si existen
+    #     cliente_data = validated_data.pop('cliente_profile', None)
+
+    #     # Actualizar campos del User (email, first_name, last_name)
+    #     instance.email = validated_data.get('email', instance.email)
+    #     instance.first_name = validated_data.get('first_name', instance.first_name)
+    #     instance.last_name = validated_data.get('last_name', instance.last_name)
+    #     instance.save()
+
+    #     # Actualizar campos del Cliente si existen datos y el perfil existe
+    #     # Usamos hasattr para verificar si el usuario tiene un perfil de cliente
+    #     if cliente_data and hasattr(instance, 'cliente_profile'):
+    #         cliente_serializer = ClienteSerializer(instance.cliente_profile, data=cliente_data, partial=True)
+    #         if cliente_serializer.is_valid(raise_exception=True):
+    #             cliente_serializer.save()
+    #     # No se actualiza el perfil de Personal aquí (se asume gestión por Admin)
+
+    #     return instance
 
 # --- NUEVO: Serializer para Cambiar Contraseña ---
 class ChangePasswordSerializer(serializers.Serializer):
@@ -184,87 +208,43 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
+class PermissionSerializer(serializers.ModelSerializer):
+    content_type_name = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Permission
+        fields = ('id', 'name', 'codename', 'content_type', 'content_type_name')
+    
+    def get_content_type_name(self, obj):
+        return f"{obj.content_type.app_label}.{obj.content_type.model}"
 
-# # usuarios/serializers.py
-# from rest_framework import serializers
-# from django.contrib.auth.models import User, Group
-# from django.contrib.auth.password_validation import validate_password
-# from django.db import transaction # Para asegurar operaciones atómicas
-# from .models import Cliente, Personal
-
-# class GroupSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Group
-#         fields = ('name',) # Solo mostrar el nombre del grupo
-
-# class UserSerializer(serializers.ModelSerializer):
-#     groups = GroupSerializer(many=True, read_only=True) # Mostrar grupos/roles
-
-#     class Meta:
-#         model = User
-#         # Campos básicos del usuario
-#         fields = ('id', 'username', 'email', 'first_name', 'last_name', 'groups', 'is_staff', 'is_active')
-#         # 'is_staff' indica si puede acceder al admin
-#         # 'is_active' indica si la cuenta está habilitada
-
-# class ClienteSerializer(serializers.ModelSerializer):
-#     # Incluir info básica del usuario asociado
-#     usuario = UserSerializer(read_only=True)
-
-#     class Meta:
-#         model = Cliente
-#         # Incluye 'usuario' para ver detalles, excluye 'id' y 'usuario_id' si no los necesitas explícitamente
-#         fields = ('id', 'usuario', 'nombre', 'numero', 'direccion', 'points')
-#         read_only_fields = ('points',) # Los puntos no se editan directamente por el cliente
-
-# class PersonalSerializer(serializers.ModelSerializer):
-#     usuario = UserSerializer(read_only=True)
-#     cargo = serializers.CharField(read_only=True) # Propiedad calculada del modelo
-
-#     class Meta:
-#         model = Personal
-#         fields = ('id', 'usuario', 'nombre', 'cargo')
-
-# class RegisterSerializer(serializers.ModelSerializer):
-#     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-#     password2 = serializers.CharField(write_only=True, required=True, label="Confirmar Contraseña")
-#     # Campos adicionales para el perfil Cliente
-#     nombre_cliente = serializers.CharField(write_only=True, required=True, max_length=100)
-#     numero = serializers.CharField(write_only=True, required=False, allow_blank=True, max_length=30)
-#     direccion = serializers.CharField(write_only=True, required=False, allow_blank=True)
-
-#     class Meta:
-#         model = User
-#         # Campos necesarios para crear el User
-#         fields = ('username', 'password', 'password2', 'email', 'first_name', 'last_name',
-#                   # Campos extra para crear el Cliente
-#                   'nombre_cliente', 'numero', 'direccion')
-
-#     def validate(self, attrs):
-#         if attrs['password'] != attrs['password2']:
-#             raise serializers.ValidationError({"password": "Las contraseñas no coinciden."})
-#         return attrs
-
-#     @transaction.atomic # Asegura que User y Cliente se creen juntos o ninguno
-#     def create(self, validated_data):
-#         user = User.objects.create(
-#             username=validated_data['username'],
-#             email=validated_data['email'],
-#             first_name=validated_data.get('first_name', ''),
-#             last_name=validated_data.get('last_name', '')
-#         )
-#         user.set_password(validated_data['password'])
-
-#         # Asignar al grupo 'Cliente'
-#         cliente_group, created = Group.objects.get_or_create(name='Cliente')
-#         user.groups.add(cliente_group)
-#         user.save()
-
-#         # Crear el perfil Cliente
-#         Cliente.objects.create(
-#             usuario=user,
-#             nombre=validated_data['nombre_cliente'],
-#             numero=validated_data.get('numero'),
-#             direccion=validated_data.get('direccion')
-#         )
-#         return user # Devolver el usuario creado
+class GroupDetailSerializer(serializers.ModelSerializer):
+    permissions = PermissionSerializer(many=True, read_only=False)
+    
+    class Meta:
+        model = Group
+        fields = ('id', 'name', 'permissions')
+    
+    def create(self, validated_data):
+        permissions_data = validated_data.pop('permissions', [])
+        group = Group.objects.create(**validated_data)
+        
+        if permissions_data:
+            permission_ids = [permission['id'] for permission in permissions_data]
+            group.permissions.set(Permission.objects.filter(id__in=permission_ids))
+        
+        return group
+    
+    def update(self, instance, validated_data):
+        permissions_data = validated_data.pop('permissions', [])
+        
+        # Update group name
+        instance.name = validated_data.get('name', instance.name)
+        instance.save()
+        
+        # Update permissions if provided
+        if permissions_data:
+            permission_ids = [permission['id'] for permission in permissions_data]
+            instance.permissions.set(Permission.objects.filter(id__in=permission_ids))
+        
+        return instance

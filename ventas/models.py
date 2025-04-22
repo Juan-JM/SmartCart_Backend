@@ -5,11 +5,16 @@ from usuarios.models import Cliente
 from productos.models import Producto
 
 class NotaVenta(models.Model):
+    ESTADO_CHOICES = (
+        ('pendiente', 'Pendiente'),
+        ('pagada', 'Pagada'),
+        ('cancelada', 'Cancelada'),
+    )
     cliente = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True, blank=True, related_name='notas_venta')
     monto_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    fecha_hora = models.DateTimeField(default=timezone.now) # Guarda fecha y hora juntas
-    # Puedes añadir otros campos como: estado (pendiente, pagada, enviada), método de pago, etc.
-
+    fecha_hora = models.DateTimeField(default=timezone.now)
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente')
+    
     def __str__(self):
         cliente_nombre = self.cliente.nombre if self.cliente else "Consumidor Final"
         return f"Venta #{self.id} - {cliente_nombre} - {self.fecha_hora.strftime('%Y-%m-%d %H:%M')}"

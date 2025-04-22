@@ -9,9 +9,14 @@ from .serializers import (
     ClienteSerializer, # Mantenemos ClienteSerializer para el ViewSet de Cliente
     PersonalSerializer, # Mantenemos PersonalSerializer para el ViewSet de Personal
     UserProfileSerializer, # NUEVO
-    ChangePasswordSerializer # NUEVO
+    ChangePasswordSerializer, # NUEVO
+    PermissionSerializer, 
+    GroupDetailSerializer
 )
 from core.permissions import IsAdminOrReadOnly, IsClienteOwnerOrAdmin, IsVendedorOrAdmin, IsReponedorOrAdmin, IsCliente
+
+from django.contrib.auth.models import Permission
+from rest_framework import filters
 
 # --- Vistas existentes (revisadas/actualizadas) ---
 
@@ -109,75 +114,22 @@ class ChangePasswordAPIView(generics.UpdateAPIView):
         return Response({"message": "Contraseña actualizada con éxito."}, status=status.HTTP_200_OK)
 
 
+class GroupViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint para ver y editar grupos.
+    """
+    queryset = Group.objects.all().prefetch_related('permissions')
+    serializer_class = GroupDetailSerializer
+    permission_classes = [permissions.IsAdminUser]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
 
-# # usuarios/views.py
-# from rest_framework import generics, viewsets, permissions, status
-# from rest_framework.response import Response
-# from django.contrib.auth.models import User, Group
-# from .models import Cliente, Personal
-# from .serializers import UserSerializer, RegisterSerializer, ClienteSerializer, PersonalSerializer
-# # Importa tus permisos personalizados
-# from core.permissions import IsAdminOrReadOnly, IsClienteOwnerOrAdmin, IsVendedorOrAdmin, IsReponedorOrAdmin, IsCliente
-
-# class RegistrationAPIView(generics.CreateAPIView):
-#     queryset = User.objects.all()
-#     serializer_class = RegisterSerializer
-#     permission_classes = [permissions.AllowAny] # Cualquiera puede registrarse
-
-# class UserViewSet(viewsets.ReadOnlyModelViewSet): # Solo lectura para usuarios generales
-#     queryset = User.objects.all().order_by('id')
-#     serializer_class = UserSerializer
-#     # Solo Admins pueden listar/ver todos los usuarios
-#     permission_classes = [permissions.IsAdminUser]
-
-# class ClienteViewSet(viewsets.ModelViewSet):
-#     queryset = Cliente.objects.select_related('usuario').all() # Optimizar consulta
-#     serializer_class = ClienteSerializer
-
-#     def get_permissions(self):
-#         """ Asignar permisos basados en la acción. """
-#         if self.action in ['list', 'retrieve']:
-#             # Admins o Vendedores pueden ver clientes
-#             permission_classes = [IsVendedorOrAdmin]
-#         elif self.action in ['update', 'partial_update']:
-#                 # Solo el propio cliente o un admin pueden editar
-#             permission_classes = [IsClienteOwnerOrAdmin]
-#         elif self.action == 'create':
-#                 # La creación se maneja en Registration o por Admins
-#                 permission_classes = [permissions.IsAdminUser]
-#         elif self.action == 'destroy':
-#                 # Solo Admins pueden borrar
-#                 permission_classes = [permissions.IsAdminUser]
-#         else:
-#                 permission_classes = [permissions.IsAdminUser] # Por defecto, restringir
-#         return [permission() for permission in permission_classes]
-
-# class PersonalViewSet(viewsets.ModelViewSet):
-#     queryset = Personal.objects.select_related('usuario').all()
-#     serializer_class = PersonalSerializer
-#     # Solo Admins pueden gestionar al personal
-#     permission_classes = [permissions.IsAdminUser]
-
-# class UserProfileAPIView(generics.RetrieveUpdateAPIView):
-#         """ Vista para que el usuario autenticado vea/edite su propio perfil. """
-#         serializer_class = UserSerializer # Podrías necesitar un serializer específico para el perfil
-#         permission_classes = [permissions.IsAuthenticated]
-
-#         def get_object(self):
-#             # Devuelve el perfil del usuario autenticado
-#             return self.request.user
-
-#         # Opcionalmente, podrías querer unificar la vista del perfil User y Cliente/Personal
-#         # Esto requeriría un serializer más complejo o lógica adicional en la vista.
-
-# # Vista para cambiar contraseña (ejemplo básico)
-# class ChangePasswordAPIView(generics.UpdateAPIView):
-#     serializer_class = serializers.Serializer # Usa un serializer específico para cambio de contraseña
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     def update(self, request, *args, **kwargs):
-#         user = request.user
-#         # Aquí iría la lógica para validar la contraseña actual y establecer la nueva
-#         # Necesitarás crear un ChangePasswordSerializer
-#         # ... (lógica de cambio de contraseña) ...
-#         return Response({"message": "Contraseña actualizada con éxito."}, status=status.HTTP_200_OK)
+class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    API endpoint para ver permisos (solo lectura).
+    """
+    queryset = Permission.objects.all().select_related('content_type')
+    serializer_class = PermissionSerializer
+    permission_classes = [permissions.IsAdminUser]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'codename', 'content_type__app_label', 'content_type__model']

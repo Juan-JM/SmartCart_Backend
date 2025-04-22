@@ -1,0 +1,30 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls %}
+
+{% block content %}
+<div id="content-main">
+    <h1>Generar Recomendaciones</h1>
+    
+    <p>
+        Estás a punto de generar nuevas reglas de recomendación basadas en el historial de ventas.
+        Este proceso puede tardar algunos minutos dependiendo del volumen de datos.
+    </p>
+    
+    <p>
+        <strong>Última actualización:</strong> 
+        {% if object.ultima_actualizacion %}
+            {{ object.ultima_actualizacion }}
+        {% else %}
+            Nunca
+        {% endif %}
+    </p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="submit-row">
+            <input type="submit" value="Generar Recomendaciones" class="default" name="_save">
+            <a href="{% url 'admin:recomendaciones_configuracionrecomendacion_changelist' %}" class="closelink">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

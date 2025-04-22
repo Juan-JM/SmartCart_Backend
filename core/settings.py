@@ -3,7 +3,7 @@ import dj_database_url
 from pathlib import Path
 from datetime import timedelta # Asegúrate de importar timedelta
 from dotenv import load_dotenv
-
+from celery.schedules import crontab  # <-- Reemplaza la importación de django_crontab
 load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -36,13 +36,17 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'authentication.apps.AuthenticationConfig',
-    'corsheaders', # Para permitir peticiones desde React/Flutter
-    
+    'corsheaders',
+    'django_celery_beat',
+    'django_crontab',
+
     # Tus apps
-    'usuarios.apps.UsuariosConfig', # O simplemente 'usuarios' si no defines una clase Config
-    'productos.apps.ProductosConfig', # O 'productos'
-    'inventario.apps.InventarioConfig', # O 'inventario'
-    'ventas.apps.VentasConfig', # O 'ventas'
+    'usuarios.apps.UsuariosConfig', 
+    'productos.apps.ProductosConfig', 
+    'inventario.apps.InventarioConfig', 
+    'ventas.apps.VentasConfig', 
+    'recomendaciones',
+    'pagos',  # Nueva app de pagos
 ]
 
 MIDDLEWARE = [
@@ -83,7 +87,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 # Ejemplo PostgreSQL (requiere psycopg2-binary y crear la base de datos 'ecommerce_db'):
 
-
+#Servidor Railway
 DATABASES ={
     'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
 }
@@ -191,14 +195,6 @@ SIMPLE_JWT = {
     'TOKEN_TYPE_CLAIM': 'token_type',
 }
 
-# # --- Configuración de Simple JWT ---
-# SIMPLE_JWT = {
-#     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60), # Duración del token de acceso
-#     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),    # Duración del token de refresco
-#     'ROTATE_REFRESH_TOKENS': False,
-#     'BLACKLIST_AFTER_ROTATION': True,
-#     # ... otras configuraciones de JWT si las necesitas ...
-# }
 
 MEDIA_URL = '/media/'  # URL para acceder a las imágenes en el navegador
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Ruta donde se guardarán las imágenes
@@ -210,9 +206,30 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000", # Tu frontend React
     "http://127.0.0.1:3000",
-    "web-production-0a76.up.railway.app"
 ]
 
 CSRF_TRUSTED_ORIGINS=['http://*','https://web-production-0a76.up.railway.app']
 
 # CORS_ALLOW_CREDENTIALS = True # Permite cookies/headers de autorización
+
+RECOMENDACIONES_CACHE_TIMEOUT = 12 * 60 * 60  # 12 horas en segundos
+
+CELERY_BEAT_SCHEDULE = {
+    'actualizar-recomendaciones': {
+        'task': 'recomendaciones.tasks.actualizar_recomendaciones',
+        'schedule': crontab(hour=3, minute=0),  # Ejecutar a las 3 AM todos los días
+    },
+    'precalcular-recomendaciones-populares': {
+        'task': 'recomendaciones.tasks.precalcular_recomendaciones_populares',
+        'schedule': crontab(hour='*/4', minute=15),  # Cada 4 horas, minuto 15
+    },
+}
+
+# Configuración de Stripe
+STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY', 'pk_test_51Q6PfFA3VhVRZlE9icPaW8KTl6aje0qhOMyJ5hxVwK6BmJeqzziM1iF6eRkO3PhttRmvdYmN8l3Qk7RB9FFbFv1c00uAf9xSsm')
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', 'sk_test_51Q6PfFA3VhVRZlE9CEO6e9DihelRFUbaGvRph3N3hQlvvvvG9ou8aCZGXpeAYWAlb9tuTj3AhJN0Dy4s6iUQu4VF00IYb7Irfe')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET', 'whsec_your_webhook_secret_here')
+STRIPE_API_VERSION = '2023-10-16'  # Usar la versión más reciente disponible
+
+# Configurar dominio para URLs de redirección
+DOMAIN_URL = os.getenv('DOMAIN_URL', 'http://localhost:3000')  # Cambiar en producción
